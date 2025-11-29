@@ -80,7 +80,7 @@ export const exchangeTwitterToken = async (
       return;
     }
 
-    const data: TwitterTokenResponse = await response.json();
+    const data = await response.json() as TwitterTokenResponse;
 
     res.json({
       success: true,
@@ -143,7 +143,7 @@ export const exchangeDiscordToken = async (
       return;
     }
 
-    const data: DiscordTokenResponse = await response.json();
+    const data = await response.json() as DiscordTokenResponse;
 
     res.json({
       success: true,
