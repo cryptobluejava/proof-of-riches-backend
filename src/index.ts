@@ -48,6 +48,12 @@ app.use(limiter);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Request logging middleware
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  next();
+});
+
 // Root endpoint
 app.get('/', (req, res) => {
   res.json({
@@ -99,9 +105,20 @@ const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`📡 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🌐 CORS origin: ${corsOptions.origin}`);
   console.log(`🌍 Listening on 0.0.0.0:${PORT}`);
+  console.log(`🔗 Health check available at: http://localhost:${PORT}/health`);
 });
 
 // Handle server errors
 server.on('error', (err) => {
   console.error('Server error:', err);
+  process.exit(1);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received, shutting down gracefully');
+  server.close(() => {
+    console.log('Process terminated');
+    process.exit(0);
+  });
 });
