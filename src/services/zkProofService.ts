@@ -43,12 +43,14 @@ class ZKProofService {
    */
   async generateProof(request: GenerateProofRequest): Promise<ProofResponse> {
     const startTime = Date.now();
-    console.log('[ZKProofService] Starting proof generation for:', {
-      wallet: request.wallet,
-      token: request.token,
-      minAmount: request.minAmount,
-      txHash: request.txHash,
-    });
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[ZKProofService] Starting proof generation for:', {
+        wallet: request.wallet,
+        token: request.token,
+        minAmount: request.minAmount,
+        txHash: request.txHash,
+      });
+    }
 
     try {
       const network = this.ethereumUtils.getNetwork();
@@ -68,7 +70,9 @@ class ZKProofService {
         throw new Error('Payment verification failed');
       }
 
-      console.log('[ZKProofService] Payment verified:', request.txHash);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[ZKProofService] Payment verified:', request.txHash);
+      }
 
       // 2. Fetch current balance from blockchain
       const balance = await this.ethereumUtils.getTokenBalance(
@@ -76,7 +80,9 @@ class ZKProofService {
         request.wallet
       );
 
-      console.log('[ZKProofService] Current balance:', balance);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[ZKProofService] Current balance:', balance);
+      }
 
       // 3. Prepare inputs for SP1 prover
       const inputs = {
@@ -85,12 +91,16 @@ class ZKProofService {
         min_amount: request.minAmount, // amount they're proving
       };
 
-      console.log('[ZKProofService] Proof inputs prepared:', inputs);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[ZKProofService] Proof inputs prepared:', inputs);
+      }
 
       // 4. Call SP1 Prover Network
       const proofData = await this.callSP1Prover(inputs);
 
-      console.log('[ZKProofService] Proof generated from SP1');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[ZKProofService] Proof generated from SP1');
+      }
 
       // 5. Generate unique verification code
       const verificationCode = this.generateVerificationCode();
@@ -114,10 +124,12 @@ class ZKProofService {
         displayAmount: request.displayAmount,
       };
 
-      const duration = Date.now() - startTime;
-      console.log(
-        `[ZKProofService] Proof generation completed in ${duration}ms`
-      );
+      if (process.env.NODE_ENV === 'development') {
+        const duration = Date.now() - startTime;
+        console.log(
+          `[ZKProofService] Proof generation completed in ${duration}ms`
+        );
+      }
 
       return response;
     } catch (error) {
@@ -133,7 +145,9 @@ class ZKProofService {
    */
   async verifyProof(request: VerifyProofRequest): Promise<VerifyProofResponse> {
     try {
-      console.log('[ZKProofService] Verifying proof for wallet:', request.wallet);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[ZKProofService] Verifying proof for wallet:', request.wallet);
+      }
 
       // Validate addresses
       if (!ethers.isAddress(request.wallet)) {
@@ -208,7 +222,9 @@ class ZKProofService {
    */
   private async callSP1Prover(inputs: Record<string, any>): Promise<SP1ProverResponse> {
     try {
-      console.log('[ZKProofService] Calling SP1 Prover API...');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[ZKProofService] Calling SP1 Prover API...');
+      }
 
       // In development, you can mock the response
       if (process.env.NODE_ENV === 'development' && process.env.MOCK_SP1 === 'true') {
@@ -245,7 +261,9 @@ class ZKProofService {
         vkey_hash: response.data.vkey_hash || '',
       };
 
-      console.log('[ZKProofService] SP1 Prover response received');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[ZKProofService] SP1 Prover response received');
+      }
       return data;
     } catch (error) {
       console.error('[ZKProofService] Error calling SP1 Prover:', error);

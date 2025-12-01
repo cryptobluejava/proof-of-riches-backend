@@ -41,7 +41,9 @@ const router = Router();
  */
 router.post('/generate-proof', async (req: Request, res: Response) => {
   try {
-    console.log('[Proofs Route] POST /generate-proof requested');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Proofs Route] POST /generate-proof requested');
+    }
 
     const {
       wallet,
@@ -114,10 +116,12 @@ router.post('/generate-proof', async (req: Request, res: Response) => {
       displayAmount,
     });
 
-    console.log('[Proofs Route] Proof generated successfully:', {
-      verificationCode: proofResponse.verificationCode,
-      network: proofResponse.network,
-    });
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Proofs Route] Proof generated successfully:', {
+        verificationCode: proofResponse.verificationCode,
+        network: proofResponse.network,
+      });
+    }
 
     res.status(200).json(proofResponse);
   } catch (error: any) {
@@ -158,7 +162,9 @@ router.post('/generate-proof', async (req: Request, res: Response) => {
  */
 router.post('/verify-proof', async (req: Request, res: Response) => {
   try {
-    console.log('[Proofs Route] POST /verify-proof requested');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Proofs Route] POST /verify-proof requested');
+    }
 
     const {
       proof,
@@ -196,10 +202,12 @@ router.post('/verify-proof', async (req: Request, res: Response) => {
       displayAmount,
     });
 
-    console.log('[Proofs Route] Proof verification completed:', {
-      isValid: verificationResult.isValid,
-      wallet: verificationResult.wallet,
-    });
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Proofs Route] Proof verification completed:', {
+        isValid: verificationResult.isValid,
+        wallet: verificationResult.wallet,
+      });
+    }
 
     res.status(200).json(verificationResult);
   } catch (error: any) {
@@ -227,7 +235,9 @@ router.get('/network', (req: Request, res: Response) => {
     const network = zkProofService.getNetwork();
     const nodeEnv = process.env.NODE_ENV || 'development';
 
-    console.log('[Proofs Route] Network info requested:', { network, nodeEnv });
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Proofs Route] Network info requested:', { network, nodeEnv });
+    }
 
     res.status(200).json({
       network,
@@ -265,12 +275,14 @@ router.get('/health', (req: Request, res: Response) => {
 
     const isHealthy = sp1Configured && walletConfigured;
 
-    console.log('[Proofs Route] Health check:', {
-      status: isHealthy ? 'ok' : 'error',
-      network,
-      sp1Configured,
-      walletConfigured,
-    });
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Proofs Route] Health check:', {
+        status: isHealthy ? 'ok' : 'error',
+        network,
+        sp1Configured,
+        walletConfigured,
+      });
+    }
 
     res.status(isHealthy ? 200 : 503).json({
       status: isHealthy ? 'ok' : 'error',
