@@ -1,6 +1,6 @@
 /**
  * @file src/types/proofs.ts
- * @description TypeScript interfaces for ZK proof system
+ * @description TypeScript interfaces for mock ZK proof system
  * @location Place in: proof-of-riches-backend/src/types/
  */
 
@@ -59,18 +59,7 @@ export interface VerifyProofResponse {
   displayAmount?: string;
 }
 
-// Internal service types
-export interface SP1ProverRequest {
-  program: string;
-  inputs: Record<string, any>;
-  mode?: 'plonk' | 'groth16';
-}
-
-export interface SP1ProverResponse {
-  proof: string;
-  public_inputs: string;
-  vkey_hash: string;
-}
+// Internal service types (mock service - no real SP1 integration)
 
 export interface TokenConfig {
   symbol: string;

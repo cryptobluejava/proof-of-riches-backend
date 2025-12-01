@@ -267,19 +267,17 @@ router.get('/network', (req: Request, res: Response) => {
 router.get('/health', (req: Request, res: Response) => {
   try {
     const network = zkProofService.getNetwork();
-    const sp1ApiKey = process.env.SP1_API_KEY;
     const backendWallet = process.env.BACKEND_WALLET;
 
-    const sp1Configured = !!sp1ApiKey && sp1ApiKey.length > 0;
+    // For mock service, we only need wallet configured
     const walletConfigured = !!backendWallet && backendWallet.length > 42;
-
-    const isHealthy = sp1Configured && walletConfigured;
+    const isHealthy = walletConfigured;
 
     if (process.env.NODE_ENV === 'development') {
       console.log('[Proofs Route] Health check:', {
         status: isHealthy ? 'ok' : 'error',
         network,
-        sp1Configured,
+        mockService: true,
         walletConfigured,
       });
     }
@@ -287,11 +285,12 @@ router.get('/health', (req: Request, res: Response) => {
     res.status(isHealthy ? 200 : 503).json({
       status: isHealthy ? 'ok' : 'error',
       network,
-      sp1Configured,
+      mockService: true,
+      sp1Configured: true, // Always true for mock service
       walletConfigured,
       message: isHealthy
-        ? 'Proof service is healthy'
-        : 'Proof service not properly configured',
+        ? 'Mock proof service is healthy'
+        : 'Backend wallet not configured',
     });
   } catch (error) {
     console.error('[Proofs Route] Error in health check:', error);

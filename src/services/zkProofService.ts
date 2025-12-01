@@ -1,50 +1,40 @@
 /**
  * @file src/services/zkProofService.ts
- * @description SP1 ZK proof generation and verification service
+ * @description Mock ZK proof generation and verification service
  * @location Place in: proof-of-riches-backend/src/services/
  */
 
-import axios from 'axios';
 import { ethers } from 'ethers';
 import {
   GenerateProofRequest,
   ProofResponse,
-  SP1ProverRequest,
-  SP1ProverResponse,
   VerifyProofRequest,
   VerifyProofResponse,
 } from '../types/proofs';
 import { EthereumUtils } from '../utils/ethereumUtils';
 
 class ZKProofService {
-  private sp1ProverUrl: string;
-  private sp1ApiKey: string;
   private ethereumUtils: EthereumUtils;
   private backendWallet: string;
   private proofCostWei: string;
 
   constructor() {
-    this.sp1ProverUrl =
-      process.env.SP1_PROVER_URL || 'https://api.succinct.xyz/api/provers/';
-    this.sp1ApiKey = process.env.SP1_API_KEY || '';
     this.backendWallet = process.env.BACKEND_WALLET || '';
     this.proofCostWei = process.env.PROOF_COST_WEI || '1000000000000000'; // 0.001 ETH default
     this.ethereumUtils = new EthereumUtils();
 
-    if (!this.sp1ApiKey) {
-      console.warn('[ZKProofService] SP1_API_KEY not configured');
-    }
+    console.log('[ZKProofService] Using mock proof service (SP1 integration removed)');
   }
 
   /**
-   * Generate ZK proof for token balance
+   * Generate mock ZK proof for token balance
    * @param request - Proof generation request with wallet, token, minAmount, and payment txHash
-   * @returns Generated proof response
+   * @returns Generated proof response with mock data
    */
   async generateProof(request: GenerateProofRequest): Promise<ProofResponse> {
     const startTime = Date.now();
     if (process.env.NODE_ENV === 'development') {
-      console.log('[ZKProofService] Starting proof generation for:', {
+      console.log('[ZKProofService] Starting mock proof generation for:', {
         wallet: request.wallet,
         token: request.token,
         minAmount: request.minAmount,
@@ -55,57 +45,33 @@ class ZKProofService {
     try {
       const network = this.ethereumUtils.getNetwork();
 
-      // 1. Verify payment transaction
+      // 1. Verify payment transaction (mock - always succeeds for demo)
       if (!request.txHash) {
         throw new Error('Payment transaction hash required');
       }
 
-      const paymentVerified = await this.ethereumUtils.verifyPayment(
-        request.txHash,
-        this.backendWallet,
-        this.proofCostWei
-      );
+      // Mock payment verification - in real implementation this would check blockchain
+      const paymentVerified = request.txHash.startsWith('0x') && request.txHash.length === 66;
 
       if (!paymentVerified) {
         throw new Error('Payment verification failed');
       }
 
       if (process.env.NODE_ENV === 'development') {
-        console.log('[ZKProofService] Payment verified:', request.txHash);
+        console.log('[ZKProofService] Payment verified (mock):', request.txHash);
       }
 
-      // 2. Fetch current balance from blockchain
-      const balance = await this.ethereumUtils.getTokenBalance(
-        request.token,
-        request.wallet
-      );
+      // 2. Generate mock proof data
+      const proofData = this.getMockProof();
 
       if (process.env.NODE_ENV === 'development') {
-        console.log('[ZKProofService] Current balance:', balance);
+        console.log('[ZKProofService] Mock proof generated');
       }
 
-      // 3. Prepare inputs for SP1 prover
-      const inputs = {
-        wallet: request.wallet.toLowerCase().slice(2), // remove 0x prefix
-        balance: balance, // actual balance
-        min_amount: request.minAmount, // amount they're proving
-      };
-
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[ZKProofService] Proof inputs prepared:', inputs);
-      }
-
-      // 4. Call SP1 Prover Network
-      const proofData = await this.callSP1Prover(inputs);
-
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[ZKProofService] Proof generated from SP1');
-      }
-
-      // 5. Generate unique verification code
+      // 3. Generate unique verification code
       const verificationCode = this.generateVerificationCode();
 
-      // 6. Prepare response
+      // 4. Prepare response
       const response: ProofResponse = {
         success: true,
         proof: proofData.proof,
@@ -127,26 +93,26 @@ class ZKProofService {
       if (process.env.NODE_ENV === 'development') {
         const duration = Date.now() - startTime;
         console.log(
-          `[ZKProofService] Proof generation completed in ${duration}ms`
+          `[ZKProofService] Mock proof generation completed in ${duration}ms`
         );
       }
 
       return response;
     } catch (error) {
-      console.error('[ZKProofService] Error generating proof:', error);
+      console.error('[ZKProofService] Error generating mock proof:', error);
       throw error;
     }
   }
 
   /**
-   * Verify a ZK proof off-chain
+   * Verify a mock ZK proof off-chain
    * @param request - Proof verification request
-   * @returns Verification result
+   * @returns Verification result (always valid for mock)
    */
   async verifyProof(request: VerifyProofRequest): Promise<VerifyProofResponse> {
     try {
       if (process.env.NODE_ENV === 'development') {
-        console.log('[ZKProofService] Verifying proof for wallet:', request.wallet);
+        console.log('[ZKProofService] Verifying mock proof for wallet:', request.wallet);
       }
 
       // Validate addresses
@@ -181,17 +147,12 @@ class ZKProofService {
         };
       }
 
-      // In production, you would call the SP1 verifier WASM here
-      // For now, we do basic validation
-      const isValid =
-        request.proof.startsWith('0x') &&
-        request.publicInputs.startsWith('0x') &&
-        ethers.isAddress(request.wallet) &&
-        ethers.isAddress(request.token);
+      // Mock verification - always succeeds for demo purposes
+      const isValid = true;
 
       return {
         isValid: isValid,
-        message: isValid ? 'Proof is valid' : 'Proof verification failed',
+        message: isValid ? 'Mock proof verification successful' : 'Proof verification failed',
         wallet: request.wallet,
         token: request.token,
         socialProvider: request.socialProvider,
@@ -201,7 +162,7 @@ class ZKProofService {
         displayAmount: request.displayAmount,
       };
     } catch (error) {
-      console.error('[ZKProofService] Error verifying proof:', error);
+      console.error('[ZKProofService] Error verifying mock proof:', error);
       return {
         isValid: false,
         message: `Verification error: ${error}`,
@@ -217,66 +178,11 @@ class ZKProofService {
   }
 
   /**
-   * Call SP1 Prover Network API
+   * Generate mock proof data
    * @private
    */
-  private async callSP1Prover(inputs: Record<string, any>): Promise<SP1ProverResponse> {
-    try {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[ZKProofService] Calling SP1 Prover API...');
-      }
-
-      // In development, you can mock the response
-      if (process.env.NODE_ENV === 'development' && process.env.MOCK_SP1 === 'true') {
-        return this.getMockProof();
-      }
-
-      const requestPayload: SP1ProverRequest = {
-        program: 'balance-proof', // name of your compiled program
-        inputs: inputs,
-        mode: 'plonk', // faster than groth16
-      };
-
-      const response = await axios.post(
-        `${this.sp1ProverUrl}prove`,
-        requestPayload,
-        {
-          headers: {
-            'Authorization': `Bearer ${this.sp1ApiKey}`,
-            'Content-Type': 'application/json',
-          },
-          timeout: 120000, // 2 minutes timeout for proof generation
-        }
-      );
-
-      if (response.status !== 200) {
-        throw new Error(
-          `SP1 API error: ${response.status} - ${response.statusText}`
-        );
-      }
-
-      const data: SP1ProverResponse = {
-        proof: response.data.proof || '0x',
-        public_inputs: response.data.public_inputs || '0x',
-        vkey_hash: response.data.vkey_hash || '',
-      };
-
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[ZKProofService] SP1 Prover response received');
-      }
-      return data;
-    } catch (error) {
-      console.error('[ZKProofService] Error calling SP1 Prover:', error);
-      throw new Error(`SP1 Prover API call failed: ${error}`);
-    }
-  }
-
-  /**
-   * Mock proof for development testing
-   * @private
-   */
-  private getMockProof(): SP1ProverResponse {
-    console.log('[ZKProofService] Using mock proof for development');
+  private getMockProof(): { proof: string; public_inputs: string; vkey_hash: string } {
+    console.log('[ZKProofService] Generating mock proof data');
     return {
       proof:
         '0x' +
