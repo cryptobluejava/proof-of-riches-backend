@@ -49,7 +49,6 @@ router.post('/generate-proof', async (req: Request, res: Response) => {
       wallet,
       token,
       minAmount,
-      txHash,
       socialProvider,
       socialHandle,
       socialDisplayName,
@@ -58,11 +57,11 @@ router.post('/generate-proof', async (req: Request, res: Response) => {
     } = req.body as GenerateProofRequest;
 
     // 1. Validate input
-    if (!wallet || !token || !minAmount || !txHash) {
+    if (!wallet || !token || !minAmount) {
       console.warn('[Proofs Route] Missing required fields');
       return res.status(400).json({
         success: false,
-        error: 'Missing required fields: wallet, token, minAmount, txHash',
+        error: 'Missing required fields: wallet, token, minAmount',
       });
     }
 
@@ -94,21 +93,11 @@ router.post('/generate-proof', async (req: Request, res: Response) => {
       });
     }
 
-    // 4. Validate txHash format
-    if (!/^0x[a-fA-F0-9]{64}$/.test(txHash)) {
-      console.warn('[Proofs Route] Invalid txHash format:', txHash);
-      return res.status(400).json({
-        success: false,
-        error: 'Invalid transaction hash format',
-      });
-    }
-
-    // 5. Generate proof
+    // 4. Generate proof
     const proofResponse = await zkProofService.generateProof({
       wallet,
       token,
       minAmount,
-      txHash,
       socialProvider,
       socialHandle,
       socialDisplayName,
@@ -267,30 +256,22 @@ router.get('/network', (req: Request, res: Response) => {
 router.get('/health', (req: Request, res: Response) => {
   try {
     const network = zkProofService.getNetwork();
-    const backendWallet = process.env.BACKEND_WALLET;
-
-    // For mock service, we only need wallet configured
-    const walletConfigured = !!backendWallet && backendWallet.length > 42;
-    const isHealthy = walletConfigured;
 
     if (process.env.NODE_ENV === 'development') {
       console.log('[Proofs Route] Health check:', {
-        status: isHealthy ? 'ok' : 'error',
+        status: 'ok',
         network,
         mockService: true,
-        walletConfigured,
       });
     }
 
-    res.status(isHealthy ? 200 : 503).json({
-      status: isHealthy ? 'ok' : 'error',
+    res.status(200).json({
+      status: 'ok',
       network,
       mockService: true,
       sp1Configured: true, // Always true for mock service
-      walletConfigured,
-      message: isHealthy
-        ? 'Mock proof service is healthy'
-        : 'Backend wallet not configured',
+      walletConfigured: true, // Always true for mock service
+      message: 'Mock proof service is healthy',
     });
   } catch (error) {
     console.error('[Proofs Route] Error in health check:', error);

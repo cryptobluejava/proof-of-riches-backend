@@ -15,12 +15,8 @@ import { EthereumUtils } from '../utils/ethereumUtils';
 
 class ZKProofService {
   private ethereumUtils: EthereumUtils;
-  private backendWallet: string;
-  private proofCostWei: string;
 
   constructor() {
-    this.backendWallet = process.env.BACKEND_WALLET || '';
-    this.proofCostWei = process.env.PROOF_COST_WEI || '1000000000000000'; // 0.001 ETH default
     this.ethereumUtils = new EthereumUtils();
 
     console.log('[ZKProofService] Using mock proof service (SP1 integration removed)');
@@ -38,40 +34,23 @@ class ZKProofService {
         wallet: request.wallet,
         token: request.token,
         minAmount: request.minAmount,
-        txHash: request.txHash,
       });
     }
 
     try {
       const network = this.ethereumUtils.getNetwork();
 
-      // 1. Verify payment transaction (mock - always succeeds for demo)
-      if (!request.txHash) {
-        throw new Error('Payment transaction hash required');
-      }
-
-      // Mock payment verification - in real implementation this would check blockchain
-      const paymentVerified = request.txHash.startsWith('0x') && request.txHash.length === 66;
-
-      if (!paymentVerified) {
-        throw new Error('Payment verification failed');
-      }
-
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[ZKProofService] Payment verified (mock):', request.txHash);
-      }
-
-      // 2. Generate mock proof data
+      // 1. Generate mock proof data
       const proofData = this.getMockProof();
 
       if (process.env.NODE_ENV === 'development') {
         console.log('[ZKProofService] Mock proof generated');
       }
 
-      // 3. Generate unique verification code
+      // 2. Generate unique verification code
       const verificationCode = this.generateVerificationCode();
 
-      // 4. Prepare response
+      // 3. Prepare response
       const response: ProofResponse = {
         success: true,
         proof: proofData.proof,
@@ -79,7 +58,7 @@ class ZKProofService {
         wallet: request.wallet,
         minAmount: request.minAmount,
         token: request.token,
-        paymentTxHash: request.txHash,
+        paymentTxHash: 'mock_tx_' + Date.now(), // Mock transaction hash
         timestamp: Date.now(),
         network: network,
         verificationCode: verificationCode,

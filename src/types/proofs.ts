@@ -8,7 +8,6 @@ export interface GenerateProofRequest {
   wallet: string; // user's Ethereum address
   token: string; // token contract address (USDT, USDC, etc)
   minAmount: string; // minimum amount in wei (as string for precision)
-  txHash: string; // payment transaction hash
   socialProvider?: 'twitter' | 'discord';
   socialHandle?: string;
   socialDisplayName?: string;
