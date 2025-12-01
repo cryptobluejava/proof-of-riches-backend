@@ -107,6 +107,11 @@ class ZKProofService {
         timestamp: Date.now(),
         network: network,
         verificationCode: verificationCode,
+        socialProvider: request.socialProvider,
+        socialHandle: request.socialHandle,
+        socialDisplayName: request.socialDisplayName,
+        tokenSymbol: request.tokenSymbol,
+        displayAmount: request.displayAmount,
       };
 
       const duration = Date.now() - startTime;
@@ -135,6 +140,7 @@ class ZKProofService {
         return {
           isValid: false,
           message: 'Invalid wallet address',
+          wallet: request.wallet,
         };
       }
 
@@ -142,6 +148,7 @@ class ZKProofService {
         return {
           isValid: false,
           message: 'Invalid token address',
+          token: request.token,
         };
       }
 
@@ -173,12 +180,24 @@ class ZKProofService {
         message: isValid ? 'Proof is valid' : 'Proof verification failed',
         wallet: request.wallet,
         token: request.token,
+        socialProvider: request.socialProvider,
+        socialHandle: request.socialHandle,
+        socialDisplayName: request.socialDisplayName,
+        tokenSymbol: request.tokenSymbol,
+        displayAmount: request.displayAmount,
       };
     } catch (error) {
       console.error('[ZKProofService] Error verifying proof:', error);
       return {
         isValid: false,
         message: `Verification error: ${error}`,
+        wallet: request.wallet,
+        token: request.token,
+        socialProvider: request.socialProvider,
+        socialHandle: request.socialHandle,
+        socialDisplayName: request.socialDisplayName,
+        tokenSymbol: request.tokenSymbol,
+        displayAmount: request.displayAmount,
       };
     }
   }

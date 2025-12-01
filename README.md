@@ -138,6 +138,51 @@ Exchanges authorization code for Discord access tokens.
 }
 ```
 
+### Proof Generation
+```
+POST /api/proofs/generate-proof
+```
+Generates a zero-knowledge proof that a wallet holds at least a specified balance of USDT/USDC.
+
+**Request Body:**
+```json
+{
+  "wallet": "0xUserWallet",
+  "token": "0xTokenAddress",
+  "minAmount": "100000000",
+  "txHash": "0xPaymentTxHash",
+  "tokenSymbol": "USDT",
+  "displayAmount": "100",
+  "socialProvider": "twitter",
+  "socialHandle": "user",
+  "socialDisplayName": "User"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "proof": "0x...",
+  "publicInputs": "0x...",
+  "wallet": "0xUserWallet",
+  "token": "0xTokenAddress",
+  "minAmount": "100000000",
+  "paymentTxHash": "0xPaymentTxHash",
+  "verificationCode": "PROOF_XYZ",
+  "network": "sepolia",
+  "tokenSymbol": "USDT",
+  "displayAmount": "100",
+  "socialHandle": "user"
+}
+```
+
+### Proof Verification
+```
+POST /api/proofs/verify-proof
+```
+Verifies the authenticity of a proof (no blockchain calls required). The frontend sends the `ProofResponse` JSON it previously received; the backend validates formatting and the SP1 proof bytes.
+
 ## Security
 
 - **CORS**: Configured to only allow requests from the frontend URL

@@ -9,6 +9,11 @@ export interface GenerateProofRequest {
   token: string; // token contract address (USDT, USDC, etc)
   minAmount: string; // minimum amount in wei (as string for precision)
   txHash: string; // payment transaction hash
+  socialProvider?: 'twitter' | 'discord';
+  socialHandle?: string;
+  socialDisplayName?: string;
+  tokenSymbol?: string;
+  displayAmount?: string;
 }
 
 export interface ProofResponse {
@@ -22,6 +27,11 @@ export interface ProofResponse {
   timestamp: number; // when proof was generated
   network: 'sepolia' | 'mainnet';
   verificationCode: string; // unique ID for this proof
+  socialProvider?: 'twitter' | 'discord';
+  socialHandle?: string;
+  socialDisplayName?: string;
+  tokenSymbol?: string;
+  displayAmount?: string;
 }
 
 export interface VerifyProofRequest {
@@ -30,6 +40,11 @@ export interface VerifyProofRequest {
   wallet: string;
   minAmount: string;
   token: string;
+  socialProvider?: 'twitter' | 'discord';
+  socialHandle?: string;
+  socialDisplayName?: string;
+  tokenSymbol?: string;
+  displayAmount?: string;
 }
 
 export interface VerifyProofResponse {
@@ -37,6 +52,11 @@ export interface VerifyProofResponse {
   message: string;
   wallet?: string;
   token?: string;
+  socialProvider?: 'twitter' | 'discord';
+  socialHandle?: string;
+  socialDisplayName?: string;
+  tokenSymbol?: string;
+  displayAmount?: string;
 }
 
 // Internal service types

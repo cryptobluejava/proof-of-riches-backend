@@ -43,7 +43,17 @@ router.post('/generate-proof', async (req: Request, res: Response) => {
   try {
     console.log('[Proofs Route] POST /generate-proof requested');
 
-    const { wallet, token, minAmount, txHash } = req.body as GenerateProofRequest;
+    const {
+      wallet,
+      token,
+      minAmount,
+      txHash,
+      socialProvider,
+      socialHandle,
+      socialDisplayName,
+      tokenSymbol,
+      displayAmount,
+    } = req.body as GenerateProofRequest;
 
     // 1. Validate input
     if (!wallet || !token || !minAmount || !txHash) {
@@ -97,6 +107,11 @@ router.post('/generate-proof', async (req: Request, res: Response) => {
       token,
       minAmount,
       txHash,
+      socialProvider,
+      socialHandle,
+      socialDisplayName,
+      tokenSymbol,
+      displayAmount,
     });
 
     console.log('[Proofs Route] Proof generated successfully:', {
@@ -145,8 +160,18 @@ router.post('/verify-proof', async (req: Request, res: Response) => {
   try {
     console.log('[Proofs Route] POST /verify-proof requested');
 
-    const { proof, publicInputs, wallet, minAmount, token } =
-      req.body as VerifyProofRequest;
+    const {
+      proof,
+      publicInputs,
+      wallet,
+      minAmount,
+      token,
+      socialProvider,
+      socialHandle,
+      socialDisplayName,
+      tokenSymbol,
+      displayAmount,
+    } = req.body as VerifyProofRequest;
 
     // Validate input
     if (!proof || !publicInputs || !wallet || !minAmount || !token) {
@@ -164,6 +189,11 @@ router.post('/verify-proof', async (req: Request, res: Response) => {
       wallet,
       minAmount,
       token,
+      socialProvider,
+      socialHandle,
+      socialDisplayName,
+      tokenSymbol,
+      displayAmount,
     });
 
     console.log('[Proofs Route] Proof verification completed:', {
