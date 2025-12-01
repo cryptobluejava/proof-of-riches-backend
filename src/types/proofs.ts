@@ -1,0 +1,74 @@
+/**
+ * @file src/types/proofs.ts
+ * @description TypeScript interfaces for ZK proof system
+ * @location Place in: proof-of-riches-backend/src/types/
+ */
+
+export interface GenerateProofRequest {
+  wallet: string; // user's Ethereum address
+  token: string; // token contract address (USDT, USDC, etc)
+  minAmount: string; // minimum amount in wei (as string for precision)
+  txHash: string; // payment transaction hash
+}
+
+export interface ProofResponse {
+  success: boolean;
+  proof: string; // ZK proof bytes (hex string)
+  publicInputs: string; // public signals (hex string)
+  wallet: string; // user's wallet
+  minAmount: string; // amount they proved
+  token: string; // token address
+  paymentTxHash: string; // payment confirmation
+  timestamp: number; // when proof was generated
+  network: 'sepolia' | 'mainnet';
+  verificationCode: string; // unique ID for this proof
+}
+
+export interface VerifyProofRequest {
+  proof: string;
+  publicInputs: string;
+  wallet: string;
+  minAmount: string;
+  token: string;
+}
+
+export interface VerifyProofResponse {
+  isValid: boolean;
+  message: string;
+  wallet?: string;
+  token?: string;
+}
+
+// Internal service types
+export interface SP1ProverRequest {
+  program: string;
+  inputs: Record<string, any>;
+  mode?: 'plonk' | 'groth16';
+}
+
+export interface SP1ProverResponse {
+  proof: string;
+  public_inputs: string;
+  vkey_hash: string;
+}
+
+export interface TokenConfig {
+  symbol: string;
+  address: string;
+  decimals: number;
+  network: 'sepolia' | 'mainnet';
+}
+
+export interface ProofState {
+  id: string;
+  wallet: string;
+  token: string;
+  minAmount: string;
+  proof?: string;
+  publicInputs?: string;
+  paymentTxHash?: string;
+  status: 'pending' | 'generating' | 'completed' | 'failed';
+  createdAt: number;
+  expiresAt: number; // proof expiration time
+  error?: string;
+}
