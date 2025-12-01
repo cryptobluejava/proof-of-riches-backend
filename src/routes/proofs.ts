@@ -41,27 +41,16 @@ const router = Router();
  */
 router.post('/generate-proof', async (req: Request, res: Response) => {
   try {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[Proofs Route] POST /generate-proof requested');
-    }
+    console.log('[Proofs Route] POST /generate-proof requested');
 
-    const {
-      wallet,
-      token,
-      minAmount,
-      socialProvider,
-      socialHandle,
-      socialDisplayName,
-      tokenSymbol,
-      displayAmount,
-    } = req.body as GenerateProofRequest;
+    const { wallet, token, minAmount, txHash } = req.body as GenerateProofRequest;
 
     // 1. Validate input
-    if (!wallet || !token || !minAmount) {
+    if (!wallet || !token || !minAmount || !txHash) {
       console.warn('[Proofs Route] Missing required fields');
       return res.status(400).json({
         success: false,
-        error: 'Missing required fields: wallet, token, minAmount',
+        error: 'Missing required fields: wallet, token, minAmount, txHash',
       });
     }
 
@@ -93,24 +82,27 @@ router.post('/generate-proof', async (req: Request, res: Response) => {
       });
     }
 
-    // 4. Generate proof
+    // 4. Validate txHash format
+    if (!/^0x[a-fA-F0-9]{64}$/.test(txHash)) {
+      console.warn('[Proofs Route] Invalid txHash format:', txHash);
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid transaction hash format',
+      });
+    }
+
+    // 5. Generate proof
     const proofResponse = await zkProofService.generateProof({
       wallet,
       token,
       minAmount,
-      socialProvider,
-      socialHandle,
-      socialDisplayName,
-      tokenSymbol,
-      displayAmount,
+      txHash,
     });
 
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[Proofs Route] Proof generated successfully:', {
-        verificationCode: proofResponse.verificationCode,
-        network: proofResponse.network,
-      });
-    }
+    console.log('[Proofs Route] Proof generated successfully:', {
+      verificationCode: proofResponse.verificationCode,
+      network: proofResponse.network,
+    });
 
     res.status(200).json(proofResponse);
   } catch (error: any) {
@@ -151,22 +143,10 @@ router.post('/generate-proof', async (req: Request, res: Response) => {
  */
 router.post('/verify-proof', async (req: Request, res: Response) => {
   try {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[Proofs Route] POST /verify-proof requested');
-    }
+    console.log('[Proofs Route] POST /verify-proof requested');
 
-    const {
-      proof,
-      publicInputs,
-      wallet,
-      minAmount,
-      token,
-      socialProvider,
-      socialHandle,
-      socialDisplayName,
-      tokenSymbol,
-      displayAmount,
-    } = req.body as VerifyProofRequest;
+    const { proof, publicInputs, wallet, minAmount, token } =
+      req.body as VerifyProofRequest;
 
     // Validate input
     if (!proof || !publicInputs || !wallet || !minAmount || !token) {
@@ -184,19 +164,12 @@ router.post('/verify-proof', async (req: Request, res: Response) => {
       wallet,
       minAmount,
       token,
-      socialProvider,
-      socialHandle,
-      socialDisplayName,
-      tokenSymbol,
-      displayAmount,
     });
 
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[Proofs Route] Proof verification completed:', {
-        isValid: verificationResult.isValid,
-        wallet: verificationResult.wallet,
-      });
-    }
+    console.log('[Proofs Route] Proof verification completed:', {
+      isValid: verificationResult.isValid,
+      wallet: verificationResult.wallet,
+    });
 
     res.status(200).json(verificationResult);
   } catch (error: any) {
@@ -224,9 +197,7 @@ router.get('/network', (req: Request, res: Response) => {
     const network = zkProofService.getNetwork();
     const nodeEnv = process.env.NODE_ENV || 'development';
 
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[Proofs Route] Network info requested:', { network, nodeEnv });
-    }
+    console.log('[Proofs Route] Network info requested:', { network, nodeEnv });
 
     res.status(200).json({
       network,
@@ -256,22 +227,29 @@ router.get('/network', (req: Request, res: Response) => {
 router.get('/health', (req: Request, res: Response) => {
   try {
     const network = zkProofService.getNetwork();
+    const sp1ApiKey = process.env.SP1_API_KEY;
+    const backendWallet = process.env.BACKEND_WALLET;
 
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[Proofs Route] Health check:', {
-        status: 'ok',
-        network,
-        mockService: true,
-      });
-    }
+    const sp1Configured = !!sp1ApiKey && sp1ApiKey.length > 0;
+    const walletConfigured = !!backendWallet && backendWallet.length > 42;
 
-    res.status(200).json({
-      status: 'ok',
+    const isHealthy = sp1Configured && walletConfigured;
+
+    console.log('[Proofs Route] Health check:', {
+      status: isHealthy ? 'ok' : 'error',
       network,
-      mockService: true,
-      sp1Configured: true, // Always true for mock service
-      walletConfigured: true, // Always true for mock service
-      message: 'Mock proof service is healthy',
+      sp1Configured,
+      walletConfigured,
+    });
+
+    res.status(isHealthy ? 200 : 503).json({
+      status: isHealthy ? 'ok' : 'error',
+      network,
+      sp1Configured,
+      walletConfigured,
+      message: isHealthy
+        ? 'Proof service is healthy'
+        : 'Proof service not properly configured',
     });
   } catch (error) {
     console.error('[Proofs Route] Error in health check:', error);
