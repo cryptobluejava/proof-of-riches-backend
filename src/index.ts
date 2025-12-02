@@ -1,10 +1,11 @@
-import express from 'express';
+6import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth';
 import proofsRouter from './routes/proofs';
+import balanceProofRoutes from './routes/balanceProof';
 
 // Load environment variables
 dotenv.config();
@@ -82,6 +83,7 @@ app.get('/health', (req, res) => {
 // API routes
 app.use('/api', authRoutes);
 app.use('/api/proofs', proofsRouter);
+app.use('/api/balance-proof', balanceProofRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {
