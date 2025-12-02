@@ -1,7 +1,7 @@
 {
   "name": "proof-of-riches-backend",
   "version": "1.0.0",
-  "description": "Backend service for Proof of Riches - handles OAuth authentication",
+  "description": "Backend service for Larp or Not - handles OAuth authentication",
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",

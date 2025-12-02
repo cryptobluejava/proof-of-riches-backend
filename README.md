@@ -1,6 +1,6 @@
-# Proof of Riches Backend
+# Larp or Not Backend
 
-Backend service for Proof of Riches application that handles OAuth authentication with Twitter and Discord.
+Backend service for Larp or Not application that handles OAuth authentication with Twitter and Discord.
 
 ## Features
 

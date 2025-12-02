@@ -59,7 +59,7 @@ app.use((req, res, next) => {
 // Root endpoint
 app.get('/', (req, res) => {
   res.json({
-    message: 'Proof of Riches Backend API',
+    message: 'Larp or Not Backend API',
     version: '1.0.0',
     status: 'running',
     endpoints: {
